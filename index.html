@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>第一種衛生管理者試験　過去問トレーナー</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f0f4f8;
+    --bg2: #ffffff;
+    --bg3: #e8edf2;
+    --border: #ccd5de;
+    --text: #1a2634;
+    --text2: #5a6e80;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --correct: #166534;
+    --correct-bg: #dcfce7;
+    --correct-border: #86efac;
+    --wrong: #991b1b;
+    --wrong-bg: #fee2e2;
+    --wrong-border: #fca5a5;
+    --badge: #e76f51;
+    --nav-h: 56px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: var(--nav-h);
+  }
+  /* ── ボトムナビ ── */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: var(--nav-h);
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 100;
+  }
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    background: none;
+    border: none;
+    color: var(--text2);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    transition: color .2s;
+    position: relative;
+  }
+  .nav-btn.active { color: var(--primary); }
+  .nav-btn svg { width: 22px; height: 22px; }
+  .badge {
+    position: absolute;
+    top: 4px; right: calc(50% - 22px);
+    background: var(--badge);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 1px 5px;
+    min-width: 18px;
+    text-align: center;
+  }
+  /* ── ページ ── */
+  .page { display: none; max-width: 720px; margin: 0 auto; padding: 16px; }
+  .page.active { display: block; }
+  /* ── ヘッダー ── */
+  .page-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--primary);
+  }
+  /* ── フィルター ── */
+  .filter-bar {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .filter-label { font-size: 12px; color: var(--text2); min-width: 60px; }
+  select {
+    background: var(--bg3);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-family: inherit;
+    font-size: 13px;
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235a6e80' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 28px;
+  }
+  select:focus { outline: 2px solid var(--primary); }
+  /* ── 進捗バー ── */
+  .progress-bar-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+  .progress-bar {
+    height: 6px;
+    background: var(--bg3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 3px;
+    transition: width .3s;
+  }
+  /* ── 問題カード ── */
+  .question-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .question-meta {
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 10px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .meta-tag {
+    background: var(--bg3);
+    border-radius: 4px;
+    padding: 2px 8px;
+  }
+  .question-text {
+    font-size: 17px;
+    line-height: 1.8;
+    font-weight: 500;
+  }
+  /* ── 選択肢 ── */
+  .choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .choice-btn {
+    background: var(--bg2);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 16px;
+    line-height: 1.6;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .choice-btn:hover:not(:disabled) { border-color: var(--primary); background: var(--bg3); }
+  .choice-btn:disabled { cursor: default; }
+  .choice-btn.correct { border-color: var(--correct-border); background: var(--correct-bg); }
+  .choice-btn.wrong   { border-color: var(--wrong-border);   background: var(--wrong-bg);   }
+  .choice-num {
+    font-weight: 700;
+    min-width: 20px;
+    color: var(--text2);
+  }
+  .choice-btn.correct .choice-num { color: #74c69d; }
+  .choice-btn.wrong   .choice-num { color: #e9625a; }
+  /* ── 判定メッセージ ── */
+  .result-msg {
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: none;
+  }
+  .result-msg.correct { background: var(--correct-bg); color: #74c69d; border: 1px solid var(--correct-border); }
+  .result-msg.wrong   { background: var(--wrong-bg);   color: #e9625a; border: 1px solid var(--wrong-border);   }
+  /* ── 解説 ── */
+  .explanation {
+    background: var(--bg3);
+    border-left: 3px solid var(--primary);
+    border-radius: 0 8px 8px 0;
+    padding: 14px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text2);
+    display: none;
+    margin-bottom: 12px;
+  }
+  /* ── ボタン ── */
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .btn:hover { background: var(--primary-dark); }
+  .btn:disabled { background: var(--bg3); color: var(--text2); cursor: default; }
+  .btn-secondary {
+    background: var(--bg3);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--border); }
+  /* ── 空状態 ── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text2);
+    font-size: 15px;
+    line-height: 2;
+  }
+  /* ── 設定トグル ── */
+  .setting-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+  .toggle {
+    width: 44px; height: 24px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    position: relative;
+    transition: background .2s;
+  }
+  .toggle.on { background: var(--primary); border-color: var(--primary); }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    top: 2px; left: 2px;
+    transition: left .2s;
+  }
+  .toggle.on::after { left: 22px; }
+  /* ── 進捗ページ ── */
+  .stat-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .stat-card .label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .stat-card .value { font-size: 24px; font-weight: 700; color: var(--primary); }
+  .stat-card .sub { font-size: 12px; color: var(--text2); }
+  .chart-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .chart-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .chart-wrap { position: relative; height: 220px; }
+  .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text2);
+    margin: 20px 0 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+  }
+  .subcat-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .subcat-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .subcat-name { flex: 1; min-width: 0; }
+  .subcat-bar-wrap {
+    width: 120px;
+    height: 8px;
+    background: var(--bg3);
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .subcat-bar { height: 100%; border-radius: 4px; }
+  .subcat-pct { width: 36px; text-align: right; font-size: 12px; color: var(--text2); flex-shrink: 0; }
+  .verdict {
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+  }
+  .verdict.pass { background: var(--correct-bg); color: #74c69d; border: 1px solid var(--correct-border); }
+  .verdict.fail { background: var(--wrong-bg);   color: #e9625a; border: 1px solid var(--wrong-border); }
+  @media (max-width: 400px) {
+    .stat-cards { grid-template-columns: 1fr 1fr; }
+    .question-text { font-size: 15px; }
+    .choice-btn { font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ページ：練習 -->
+<div class="page active" id="page-practice">
+  <div class="page-title">過去問トレーナー</div>
+
+  <div class="filter-bar">
+    <div class="filter-row">
+      <span class="filter-label">大科目</span>
+      <select id="filter-subject">
+        <option value="">すべて</option>
+        <option value="関係法令_有害">関係法令（有害業務）</option>
+        <option value="関係法令_一般">関係法令（一般）</option>
+        <option value="労働衛生_有害">労働衛生（有害業務）</option>
+        <option value="労働衛生_一般">労働衛生（一般）</option>
+        <option value="労働生理">労働生理</option>
+      </select>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">中分類</span>
+      <select id="filter-subcat"><option value="">すべて</option></select>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">出題年度</span>
+      <select id="filter-year"><option value="">すべて</option></select>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">出題数</span>
+      <select id="filter-count">
+        <option value="10">10問（スキマ学習）</option>
+        <option value="20">20問</option>
+        <option value="30">30問</option>
+        <option value="">全問</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-info">
+      <span id="progress-text">0 / 0</span>
+      <span id="progress-pct">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+
+  <div id="quiz-area">
+    <div class="question-card">
+      <div class="question-meta" id="q-meta"></div>
+      <div class="question-text" id="q-text"></div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="result-msg" id="result-msg"></div>
+    <div class="explanation" id="explanation"></div>
+    <button class="btn" id="next-btn" style="display:none" onclick="nextQuestion()">次の問題へ</button>
+    <div id="session-result" style="display:none"></div>
+    <button class="btn btn-secondary" id="restart-btn" style="display:none;margin-top:10px" onclick="restartSession()">もう一度（新しい問題で）</button>
+  </div>
+  <div class="empty-state" id="empty-state" style="display:none">
+    該当する問題が見つかりませんでした。<br>絞り込み条件を変えてみてください。
+  </div>
+</div>
+
+<!-- ページ：苦手復習 -->
+<div class="page" id="page-review">
+  <div class="page-title">苦手問題の復習</div>
+  <div class="setting-row">
+    <span>正解したら苦手リストから外す</span>
+    <div class="toggle on" id="auto-remove-toggle" onclick="toggleAutoRemove()"></div>
+  </div>
+  <div style="height:12px"></div>
+  <div id="review-area"></div>
+</div>
+
+<!-- ページ：進捗 -->
+<div class="page" id="page-stats">
+  <div class="page-title">学習進捗</div>
+  <div id="stats-area"></div>
+</div>
+
+<!-- ボトムナビ -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="nav-practice" onclick="showPage('practice')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg>
+    練習
+  </button>
+  <button class="nav-btn" id="nav-review" onclick="showPage('review')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10z"/><path d="M12 8v4l3 3"/></svg>
+    苦手復習
+    <span class="badge" id="review-badge" style="display:none"></span>
+  </button>
+  <button class="nav-btn" id="nav-stats" onclick="showPage('stats')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+    進捗
+  </button>
+</nav>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// 問題データ
+// ═══════════════════════════════════════════════════════
+const QUESTIONS = [
+  {id:"Q001",year:"2025年10月",subject:"関係法令_有害",subcat:"衛生管理体制",text:"常時400人の労働者を使用する製造業の事業場における衛生管理体制に関する記述のうち、法令上、誤っているものはどれか。（深夜業200人・多量の高熱物体取扱50人・塩素試験研究30人を含む）",choices:["総括安全衛生管理者を選任しなければならない。","衛生管理者のうち少なくとも１人を専任の衛生管理者としなければならない。","衛生管理者は、全て第一種衛生管理者免許を有する者のうちから選任することができる。","産業医は、この事業場に専属でない者を選任することができる。","特定化学物質作業主任者を選任しなくてよい。"],answer:2,explanation:"【誤り】専任衛生管理者が必要なのは常時500人超で一定の有害業務がある場合。400人では該当しない。【根拠】安衛則第7条第1項⑤。①正：300人以上の製造業は総括安全衛生管理者選任義務あり（安衛法第10条）。③正：第一種免許のみでも可。④正：専属産業医は1000人以上等が要件。⑤正：塩素の試験研究は特定化学物質作業主任者の選任義務業務に該当しない（安衛令第6条⑱）。"},
+  {id:"Q002",year:"2025年10月",subject:"関係法令_有害",subcat:"作業主任者",text:"次のＡからＤの作業について、法令上、作業主任者の選任が義務付けられているものの組合せはどれか。A：水深10m以上の場所における潜水の作業　B：セメント製造工程においてセメントを袋詰めする作業　C：圧気工法により、大気圧を超える気圧下の作業室において行う作業　D：石炭を入れてあるホッパーの内部における作業",choices:["Ａ，Ｂ","Ａ，Ｃ","Ａ，Ｄ","Ｂ，Ｃ","Ｃ，Ｄ"],answer:5,explanation:"A：義務なし。B：義務なし。C：義務あり＝高圧室内作業→高圧室内作業主任者を選任（安衛令第6条第1項①）。D：義務あり＝石炭ホッパー内は酸素欠乏危険場所→酸素欠乏危険作業主任者を選任（安衛令第6条第1項㉑、別表第6⑤）。"},
+  {id:"Q003",year:"2025年10月",subject:"関係法令_有害",subcat:"有害業務管理",text:"厚生労働大臣が定める規格を具備しなければ、譲渡・貸与・設置してはならない機械等に該当するものはどれか。",choices:["騒音計","放射線測定器","検知管方式による一酸化炭素検定器","アンモニア用防毒マスク","化学防護服"],answer:4,explanation:"①②③⑤は該当しない。④該当する：防毒マスクは安衛法第42条・別表第2⑨により規格具備義務あり。防じんマスク・防毒マスク・送気マスク等の呼吸用保護具は規格具備が必要。騒音計・放射線測定器・検定器・化学防護服は対象外。"},
+  {id:"Q004",year:"2025年10月",subject:"関係法令_有害",subcat:"届出・記録",text:"特定化学物質障害予防規則による特別管理物質を製造する事業者が事業廃止時に所轄労働基準監督署長に提出する記録等の組合せはどれか。A：局所排気装置等の定期自主検査記録　B：労働者の作業概要・従事期間等の記録　C：作業環境測定の記録　D：特定化学設備の定期自主検査記録　E：特定化学物質健康診断個人票",choices:["Ａ，Ｂ，Ｄ","Ａ，Ｃ，Ｄ","Ａ，Ｃ，Ｅ","Ｂ，Ｃ，Ｅ","Ｂ，Ｄ，Ｅ"],answer:4,explanation:"特化則第53条第1項による提出義務：A＝義務なし、B＝義務あり（②）、C＝義務あり（①）、D＝義務なし、E＝義務あり（③）。よってB・C・Eの組合せが正解。"},
+  {id:"Q005",year:"2025年10月",subject:"関係法令_有害",subcat:"作業環境測定",text:"労働安全衛生規則の衛生基準について、誤っているものはどれか。",choices:["多量のドライアイスを取り扱う屋内作業場については、半月以内ごとに1回、気温・湿度・ふく射熱を測定しなければならない。","強烈な騒音を発する屋内作業場では、その伝ぱを防ぐため隔壁を設ける等の措置を講じなければならない。","多量の熱を放散する溶融炉がある屋内作業場では、加熱空気を屋外に排出し又はふく射熱から労働者を保護する措置を講じなければならない。","坑内における気温は、原則として37℃以下にしなければならない。","著しく暑熱又は多湿の作業場では、坑内等特殊な場合を除き、休憩設備を作業場外に設けなければならない。"],answer:1,explanation:"【誤り】ドライアイス取扱い作業場での測定義務は「気温及び湿度」のみ。ふく射熱は含まない。【根拠】安衛則第587条⑪・第607条第1項。②正：安衛則第584条。③正：安衛則第608条第1項。④正：安衛則第611条第1項。⑤正：安衛則第614条。"},
+  {id:"Q006",year:"2025年10月",subject:"関係法令_有害",subcat:"有害業務管理",text:"次のＡからＥの粉じん発生源について、法令上、特定粉じん発生源に該当するものの組合せはどれか。A：耐火物炉解体箇所　B：ガラス製造原料の溶解炉投入箇所　C：研磨材による手持式動力工具での金属研磨箇所　D：粉状炭素製品の袋詰め箇所　E：固定溶射機による金属溶射箇所",choices:["Ａ，Ｂ","Ａ，Ｅ","Ｂ，Ｃ","Ｃ，Ｄ","Ｄ，Ｅ"],answer:5,explanation:"粉じん則第2条第1項による。A：該当しない。B：該当しない。C：該当しない。D：該当する（別表第2⑨）。E：該当する（別表第2⑮）。"},
+  {id:"Q007",year:"2025年10月",subject:"関係法令_有害",subcat:"有害業務管理",text:"酸素欠乏症等防止規則に関する記述のうち、誤っているものはどれか。",choices:["し尿を入れたことのあるポンプを分解する作業では、指揮者を選任し作業を指揮させなければならない。","パルプ液を入れたことのある槽の内部における作業では、酸素欠乏危険作業主任者技能講習修了者から作業主任者を選任しなければならない。","硫化水素中毒とは、硫化水素の濃度が10ppmを超える空気を吸入することにより生ずる症状の状態をいう。","タンク内部等でアルゴン等を使用する溶接作業では、酸素濃度を18%以上に保つよう換気し又は空気呼吸器等を使用させなければならない。","第一種酸素欠乏危険作業を行う作業場では、その日の作業開始前に空気中の酸素濃度を測定しなければならない。"],answer:2,explanation:"【誤り】パルプ液槽内部は第二種酸素欠乏危険作業（硫化水素発生リスク）に該当するため、「酸素欠乏・硫化水素危険作業主任者技能講習」修了者から選任しなければならない。酸素欠乏危険作業主任者技能講習のみでは不足。【根拠】安衛令別表第6③の3、酸欠則第11条第1項。"},
+  {id:"Q008",year:"2025年10月",subject:"関係法令_有害",subcat:"作業環境測定",text:"有害業務を行う作業場とその定期測定項目の組合せとして、法令上、誤っているものはどれか。",choices:["溶融ガラスからガラス製品を成型する業務を行う屋内作業場……空気中の粉じんの濃度","加硫がまによりゴムを加硫する業務を行う屋内作業場……気温及び湿度","ドラムバーカーにより木材を削皮する業務を行う屋内作業場……等価騒音レベル","エックス線装置を用いて透過写真撮影の業務を行う作業場の管理区域……線量当量率又は線量当量","廃棄物焼却施設において焼却灰を取り扱う業務を行う作業場……空気中のダイオキシン類の濃度"],answer:1,explanation:"【誤り】溶融ガラス成型作業場の測定義務は「気温・湿度・ふく射熱」であり、粉じん濃度ではない。【根拠】安衛則第587条⑧・第607条第1項。②正。③正。④正。⑤正。"},
+  {id:"Q009",year:"2025年10月",subject:"関係法令_有害",subcat:"有害業務管理",text:"有機溶剤等を取り扱う場合の措置について、有機溶剤中毒予防規則に違反しているものはどれか。",choices:["地下室内部で第一種有機溶剤等を使用する作業で局所排気装置を有効稼働させているが送気マスク等を使用させていない。","地下室内部で第二種有機溶剤等を使用する作業でプッシュプル型換気装置を有効稼働させているが送気マスク等を使用させていない。","地下室内部で第三種有機溶剤等を用いて吹付けによる作業を行い、全体換気装置を有効稼働させ有機ガス用防毒マスクを使用させている。","屋内作業場の空気清浄装置のない局所排気装置の排気口を屋根から2mとしている。","有機溶剤等を入れてあった空容器で有機溶剤蒸気が発散するおそれのあるものを屋外の一定の場所に集積している。"],answer:3,explanation:"【違反】地下室内部で第三種有機溶剤等を用いて吹付け作業を行う場合は、発散源を密閉する設備、局所排気装置またはプッシュプル型換気装置を設けなければならない。全体換気装置は認められない。【根拠】有機則第6条第2項。"},
+  {id:"Q010",year:"2025年10月",subject:"関係法令_有害",subcat:"就業制限",text:"労働基準法に基づく時間外労働協定で、延長する労働時間が1日2時間以内に制限されない業務はどれか。",choices:["著しく暑熱な場所における業務","多量の低温物体を取り扱う業務","ヘリウム、アルゴン等の不活性の気体を入れたことのあるタンクの内部における業務","削岩機・鋲打機等の使用によって身体に著しい振動を与える業務","土石・獣毛等のじんあい又は粉末を著しく飛散する場所における業務"],answer:3,explanation:"①制限される：労基則第18条第1項①。②制限される：労基則第18条第1項②。③制限されない：不活性ガスタンク内業務は1日2時間以内の制限対象外。④制限される：労基則第18条第1項⑥。⑤制限される：労基則第18条第1項④。【根拠】労基法第36条第6項①。"},
+  {id:"Q011",year:"2025年10月",subject:"労働衛生_有害",subcat:"化学物質・有機溶剤の有害性",text:"化学物質と常温・常圧（25℃、1気圧）での空気中における状態の組合せとして、誤っているものはどれか。",choices:["ホルムアルデヒド……ガス","塩化ビニル……ガス","アクリロニトリル……ガス","二硫化炭素……蒸気","アセトン……蒸気"],answer:3,explanation:"①②④⑤正しい。【誤り】アクリロニトリルは常温・常圧で液体のため、空気中では「蒸気」として存在する。「ガス」は常温・常圧で気体の物質、「蒸気」は常温・常圧で液体または固体の物質が蒸発したもの。"},
+  {id:"Q012",year:"2025年10月",subject:"労働衛生_有害",subcat:"化学物質・有機溶剤の有害性",text:"金属などによる健康障害に関する記述のうち、誤っているものはどれか。",choices:["ベリリウム中毒では、溶血性貧血、尿の赤色化などの症状がみられる。","砒素中毒では、角化症・黒皮症などの皮膚障害、末梢神経障害などがみられる。","マンガン中毒では、筋のこわばり・震え・歩行困難などパーキンソン病に似た症状がみられる。","カドミウム中毒では、上気道炎・肺炎・腎機能障害などがみられる。","金属水銀中毒では、感情不安定・幻覚などの精神障害がみられる。"],answer:1,explanation:"【誤り】溶血性貧血・尿の赤色化は砒素中毒の症状。ベリリウムの急性中毒では接触性皮膚炎・皮膚潰瘍・肺炎がみられ、慢性中毒では肺肉芽腫（ベリリウム肺）が発生する。②③④⑤正しい。"},
+  {id:"Q013",year:"2025年10月",subject:"労働衛生_有害",subcat:"粉じん・じん肺",text:"粉じんによる健康障害に関する記述のうち、誤っているものはどれか。",choices:["米杉・ラワンなどの木材粉じんは、ぜんそくを起こすことがある。","じん肺の自覚症状は初期にはあまりみられないが、進行すると咳・痰・呼吸困難などがみられる。","じん肺は、続発性気管支炎・肺結核などを合併することがある。","石綿肺では、胸膜の肥厚（プラーク）・胸膜の石灰化などがみられる。","けい肺は、鉄・アルミニウムなどの金属粉じんを吸入することによって発症するじん肺である。"],answer:5,explanation:"①②③④正しい。【誤り】けい肺は「鉄・アルミニウムなどの金属粉じん」ではなく、「鉱物性粉じんに含まれる遊離けい酸（二酸化けい素）」を吸入することによって発症するじん肺。"},
+  {id:"Q014",year:"2025年10月",subject:"労働衛生_有害",subcat:"騒音・振動・放射線",text:"作業環境における騒音及びそれによる健康障害に関する記述のうち、誤っているものはどれか。",choices:["騒音性難聴の初期に認められる4,000Hz付近の音から始まる聴力低下の型をc5dipという。","音圧レベルは通常、人間が聴くことができる最も小さな音圧に対する比の常用対数を20倍して求められる。","騒音は自律神経系や内分泌系へも影響を与え、交感神経の活動亢進や副腎皮質ホルモン分泌増加が認められることがある。","人が聴くことのできる音の周波数は10Hzから30,000Hz程度で、会話音域は2,000Hzから4,000Hz程度である。","等価騒音レベルは、時間的に変動する騒音レベルのエネルギー的な平均値を表す量で、変動騒音に対する生理・心理的反応とよく対応している。"],answer:4,explanation:"①②③⑤正しい。【誤り】人が聴くことのできる周波数はおよそ20〜20,000Hz。会話音域は通常500Hz〜2,000Hz程度。設問の「10Hz〜30,000Hz」「会話音域2,000〜4,000Hz」はいずれも誤り。"},
+  {id:"Q015",year:"2025年10月",subject:"労働衛生_有害",subcat:"化学物質・有機溶剤の有害性",text:"「化学物質等による危険性又は有害性等の調査等に関する指針」に関する記述のうち、誤っているものはどれか。",choices:["リスクアセスメントで最初に実施するのは、危険性又は有害性の特定である。","ハザードは、労働災害発生の可能性と負傷又は疾病の重大性の組合せであると定義される。","疾病リスク低減措置の検討では、保護具の使用よりも管理的対策を優先する。","疾病リスク低減措置の検討では、法令に定められた事項を除けば、有害性の低い物質への代替等を最優先する。","より優先順位の高い措置により十分にリスクが低減される場合、それより低い優先順位の措置の検討は必要ない。"],answer:2,explanation:"①③④⑤正しい。【誤り】選択肢の内容は「リスク」の定義。ハザード（危険有害性）とは「労働者の就業に係る危険性又は有害性そのもの」であり、建設物・設備・原材料・ガス・蒸気・粉じん等により業務に起因するもの。可能性×重大性の組合せはリスクの定義。"},
+  {id:"Q016",year:"2025年10月",subject:"労働衛生_有害",subcat:"化学物質・有機溶剤の有害性",text:"有機溶剤の人体に対する影響に関する記述のうち、誤っているものはどれか。",choices:["脂溶性があり、脂肪の多い脳などに入りやすい。","呼吸器の症状には、咳・上気道の炎症などがある。","低濃度の繰り返しばく露による慢性中毒では、めまい・不眠などの不定愁訴がみられる。","皮膚や粘膜に対する症状には、黒皮症・鼻中隔穿孔などがある。","肝機能障害や腎機能障害を起こすものがある。"],answer:4,explanation:"①②③⑤正しい。【誤り】黒皮症・鼻中隔穿孔は砒素中毒の症状。有機溶剤の皮膚・粘膜症状は「皮膚の角化・結膜炎」等が正しい。"},
+  {id:"Q017",year:"2025年10月",subject:"労働衛生_有害",subcat:"特殊健康診断",text:"特殊健康診断に関する記述のうち、誤っているものはどれか。",choices:["有害業務への配置替えの際の特殊健康診断には、業務適性の判断と基礎資料取得という目的がある。","特殊健康診断が法定労働時間外に行われた場合、割増賃金を支払う必要がある。","眼底検査は、電離放射線健康診断で実施され、動脈硬化の進展の有無を検査する。","振動工具取扱い作業者の特殊健康診断を1年に2回実施する場合、そのうち1回は冬季に行うとよい。","特殊健康診断で適切な健診デザインを行うためには、作業内容と有害要因へのばく露状況を把握する必要がある。"],answer:3,explanation:"①②④⑤正しい。【誤り】眼底検査は二硫化炭素の有機溶剤健康診断の項目。電離放射線健康診断では白血球数や白内障に関する眼の検査を実施する。"},
+  {id:"Q018",year:"2025年10月",subject:"労働衛生_有害",subcat:"局所排気・作業環境測定",text:"作業環境測定基準及び作業環境評価基準に基づく作業環境測定とその結果の評価に関する記述のうち、正しいものはどれか。",choices:["Ａ測定の第二評価値が管理濃度を超えている単位作業場所は、Ｂ測定の結果に関係なく第三管理区分になる。","Ａ測定における測定点の高さの範囲は、床上100cm以上150cm以下である。","Ａ測定は、間欠的に大量の有害物質が発散する作業における最高濃度を知るために行う測定である。","管理濃度は、個々の労働者の有害物質へのばく露限界を示すものである。","Ｂ測定の測定値が管理濃度を超えている単位作業場所は、Ａ測定の結果に関係なく第三管理区分になる。"],answer:1,explanation:"①正しい：A測定の第二評価値が管理濃度超→B測定結果によらず第三管理区分。②誤：測定点の高さは床上50cm以上150cm以下。③誤：間欠的高濃度発散の最高濃度を知るのはB測定。④誤：管理濃度は作業環境管理の指標であり、個人のばく露限界ではない。⑤誤：B測定値が管理濃度の1.5倍超の場合に第三管理区分。"},
+  {id:"Q019",year:"2025年10月",subject:"労働衛生_有害",subcat:"保護具",text:"呼吸用保護具に関する記述のうち、正しいものはどれか。",choices:["防毒マスクの吸収缶の色は、アンモニア用は緑色で、有機ガス用は黒色である。","2種類以上の有害ガスが混在している場合には、最も毒性の強いガス用の防毒マスクを使用する。","型式検定合格標章のある防じんマスクでも、ヒュームのような微細な粒子には効果がない。","防じんマスクは、オイルミストが堆積しても粒子捕集効率は低下しないので吸気抵抗が上昇しない限り使用できる。","エアラインマスクは、自給式呼吸器の一種である。"],answer:1,explanation:"①正しい：アンモニア用＝緑色、有機ガス用＝黒色。②誤：混在ガス時は送気マスクや自給式呼吸器を使用。③誤：型式検定合格の防じんマスクはヒューム等の微粒子にも有効。④誤：オイルミスト等の堆積により捕集効率が低下するものがある。⑤誤：エアラインマスクは送気マスクの一種（自給式ではない）。"},
+  {id:"Q020",year:"2025年10月",subject:"労働衛生_有害",subcat:"騒音・振動・放射線",text:"作業環境における有害要因による健康障害に関する記述のうち、正しいものはどれか。",choices:["電離放射線の被ばくによる白内障は、晩発障害に分類され、被ばく後半年〜30年後に現れる。","マイクロ波は赤外線より波長が短い電磁波で、照射部位の組織を加熱する作用がある。","金属熱は、金属の溶融作業において高温環境により体温調節中枢が麻痺することにより発生し、長期間にわたる発熱・関節痛などがみられる。","凍瘡は皮膚組織の凍結壊死を伴うしもやけで、0℃以下の寒冷にばく露することによって発生する。","潜水業務における減圧症は、浮上による減圧に伴い血液中に溶け込んでいた酸素が気泡となり血管を閉塞したり組織を圧迫することにより発生する。"],answer:1,explanation:"①正しい：白内障は晩発障害（確定的影響）で被ばく後数年〜数十年後に発症。②誤：マイクロ波は赤外線より波長が長い電磁波。③誤：金属熱は亜鉛等の金属ヒューム吸入により発生（高温環境ではない）。④誤：凍瘡（しもやけ）は0℃以上の寒冷による炎症。⑤誤：気泡となるのは酸素ではなく窒素。"},
+  {id:"Q021",year:"2025年10月",subject:"関係法令_一般",subcat:"衛生管理体制",text:"事業場の衛生管理体制に関する記述のうち、法令上、誤っているものはどれか。",choices:["常時500人超〜1000人以下の労働者を使用し、深夜業を含む業務に常時30人以上の労働者を従事させる事業場では、衛生管理者のうち少なくとも1人を専任の衛生管理者としなければならない。","常時1000人超〜2000人以下の労働者を使用する事業場では、4人以上の衛生管理者を選任しなければならない。","常時50人以上の労働者を使用するゴルフ場業の事業場では、第二種衛生管理者免許を有する者のうちから衛生管理者を選任することができる。","常時1000人以上の労働者を使用する事業場では、その事業場に専属の産業医を選任しなければならない。","衛生管理者を選任したときは、遅滞なく、その氏名等を所轄労働基準監督署長に報告しなければならない。"],answer:1,explanation:"【誤り】深夜業は専任衛生管理者の選任要件に該当しない。専任衛生管理者が必要なのは「常時500人超で坑内労働・有害放射線・強烈な騒音等の有害業務に常時30人以上従事させる事業場」。【根拠】安衛則第7条第1項④⑤。②正。③正。④正：安衛則第13条第1項③。⑤正。"},
+  {id:"Q022",year:"2025年10月",subject:"関係法令_一般",subcat:"衛生管理体制",text:"衛生管理者が管理すべき業務として、法令上、定められていないものはどれか。",choices:["労働災害の原因の調査及び再発防止対策に関すること。","安全衛生に関する方針の表明に関すること。","少なくとも毎日1回作業場等を巡視し、衛生状態に有害のおそれがあるときは直ちに必要な措置を講ずること。","化学物質等による危険性又は有害性等の調査及びその結果に基づき講ずる措置に関すること。","健康診断の実施その他健康の保持増進のための措置に関すること。"],answer:3,explanation:"【定められていない】衛生管理者の定期巡視は「少なくとも毎週1回」であり、毎日1回ではない。【根拠】安衛則第11条第1項。①定められている：安衛法第10条第1項④。②定められている：安衛則第3条の2第1項①。④定められている：安衛則第3条の2第1項②。⑤定められている：安衛法第10条第3項。"},
+  {id:"Q023",year:"2025年10月",subject:"関係法令_一般",subcat:"衛生委員会",text:"衛生委員会に関する記述のうち、法令上、誤っているものはどれか。",choices:["衛生委員会の議長を除く委員の半数は、過半数代表者の推薦に基づき指名しなければならない（労働組合がない場合）。","衛生委員会の議長は、総括安全衛生管理者等のうちから事業者が指名した委員がなる。","事業場専属でない衛生管理者として選任している労働衛生コンサルタントを委員に指名できる。","作業環境測定を外部機関に委託している場合、当該作業環境測定士を衛生委員会の委員として指名できる。","衛生委員会の付議事項には、長時間労働による健康障害防止対策の樹立に関することが含まれる。"],answer:4,explanation:"【誤り】作業環境測定士は事業場に専属の労働者である必要がある。外部委託先の作業環境測定士は指名できない。【根拠】安衛法第18条第3項。①正。②正。③正。⑤正：安衛則第22条⑨。"},
+  {id:"Q024",year:"2025年10月",subject:"関係法令_一般",subcat:"衛生管理体制",text:"常時使用する労働者数が100人の事業場で、法令上、総括安全衛生管理者の選任が義務付けられている業種はどれか。",choices:["医療業","熱供給業","通信業","水道業","清掃業"],answer:5,explanation:"①②③④：義務付けられていない（安衛令第2条第1項②③により1000人以上が要件）。⑤義務付けられている：清掃業は安衛令第2条第1項①（屋外的業種）に該当し、100人以上で選任義務あり。"},
+  {id:"Q025",year:"2025年10月",subject:"関係法令_一般",subcat:"ストレスチェック・面接指導",text:"ストレスチェック結果に基づく面接指導に関する記述のうち、正しいものはどれか。",choices:["常時50人以上の労働者を使用する事業者は、1年以内ごとに1回、定期に、ストレスチェック及び面接指導の結果を所轄労働基準監督署長に報告しなければならない。","事業者は、面接指導の対象要件に該当する労働者から申出があったときは、申出の日から3か月以内に面接指導を行わなければならない。","事業者は、面接指導を行った場合は当該部署に属する労働者の集団ごとに集計・分析しなければならない。","面接指導の結果は、健康診断個人票に記載しなければならない。","面接指導を行う医師として事業者が指名できる医師は、法定の研修を修了した医師に限られる。"],answer:1,explanation:"①正しい：安衛則第52条の21。②誤：申出があったときは「遅滞なく」面接指導を行う（3か月以内ではない）。③誤：集団ごとの分析は「検査を行った医師等」が行う。④誤：面接指導の結果は別途「記録」を作成（健康診断個人票ではない）。⑤誤：医師の指名要件に法定研修修了は不要。"},
+  {id:"Q026",year:"2025年10月",subject:"関係法令_一般",subcat:"健康診断",text:"医師による雇入時の健康診断に関する記述のうち、誤っているものはどれか。",choices:["事業場に雇い入れる日の6か月前に医師による健康診断を受けた労働者に対しても、法定の全ての項目について雇入時の健康診断を行わなければならない。","雇入時の健康診断における聴力の検査は、1,000Hz及び4,000Hzの音に係る聴力について行わなければならない。","50人以上の労働者に対して雇入時の健康診断を行ったときは、遅滞なく、その結果を所轄労働基準監督署長に報告しなければならない。","事業場において実施した雇入時の健康診断の項目に異常の所見があると診断された労働者については、健康診断が行われた日から3か月以内に、医師の意見を聴かなければならない。","雇入時の健康診断の結果に基づき、健康診断個人票を作成して、これを5年間保存しなければならない。"],answer:3,explanation:"①正。②正。【誤り】雇入時の健康診断の結果は労基署に報告しなくてよい。定期健康診断（50人以上）のみ報告義務あり。【根拠】安衛則第52条第1項。④正。⑤正。"},
+  {id:"Q027",year:"2025年10月",subject:"関係法令_一般",subcat:"健康診断",text:"事業場の建築物・施設等の衛生基準について、労働安全衛生規則に違反しているものはどれか。",choices:["常時40人就業の屋内作業場の気積が400㎥（設備占有容積・床上3m超を除く）となっている。","ねずみ・昆虫等の調査を6か月ごとに1回実施し、その結果に基づき必要な措置を講じている。","男性5人を含む常時30人就業の事業場で、女性用には臥床できる休養室を設けているが、男性用には臥床できない休憩設備を利用させている。","食堂の床面積を食事の際の1人につき1㎡を超えるようにしている。","炊事場の入口に洗浄剤含浸マットを設置して、土足のままでも立ち入れるようにしている。"],answer:5,explanation:"①違反なし。②違反なし。③違反なし：男性5人・女性25人で、男性用休養設備の区別要件（男性30人以上）に達していない（安衛則第618条）。④違反なし。【違反】炊事場専用の履物を備え、土足のまま立ち入らせてはならない（安衛則第630条第1項⑮）。"},
+  {id:"Q028",year:"2025年10月",subject:"関係法令_一般",subcat:"健康診断",text:"事務室の設備の定期的な点検等に関する記述のうち、法令上、正しいものはどれか。",choices:["機械による換気のための設備については、3か月以内ごとに1回、定期に、異常の有無を点検しなければならない。","空気調和設備の冷却塔及び冷却水については、原則として、1か月以内ごとに1回、定期に、その汚れの状況を点検しなければならない。","空気調和設備内に設けられた排水受けについては、原則として、2か月以内ごとに1回、定期に、その汚れ及び閉塞の状況を点検しなければならない。","空気調和設備の加湿装置については、原則として、2か月以内ごとに1回、定期に、その汚れの状況を点検しなければならない。","燃焼器具を使用するときは、発熱量が著しく少ないものを除き、1か月以内ごとに1回、定期に、異常の有無を点検しなければならない。"],answer:2,explanation:"①誤：「3か月以内」⇒「2か月以内」（事務所則第9条第1項）。②正しい：事務所則第9条の2第1項②。③誤：「2か月以内」⇒「1か月以内」（事務所則第9条の2第1項④）。④誤：「2か月以内」⇒「1か月以内」（事務所則第9条の2第1項③）。⑤誤：「1か月以内ごとに1回」⇒「毎日」（事務所則第6条第2項）。"},
+  {id:"Q029",year:"2025年10月",subject:"関係法令_一般",subcat:"労働基準法（労働時間・休暇）",text:"労働基準法における労働時間等に関する記述のうち、正しいものはどれか。",choices:["監視又は断続的労働に従事する労働者であって所轄労働基準監督署長の許可を受けたものについては、労働時間・休憩・休日に関する規定は適用されない。","1日8時間を超えて労働させることができるのは、時間外労働協定を締結し届け出た場合に限られている。","フレックスタイム制の清算期間は6か月以内の期間に限られる。","満20歳未満の者については、時間外・休日労働をさせることはできない。","労働時間が8時間を超える場合は少なくとも60分、12時間を超える場合は少なくとも90分の休憩を与えなければならない。"],answer:1,explanation:"①正しい：労基法第41条第1項③。②誤：災害等臨時の必要がある場合は行政官庁の許可で時間外労働可（労基法第33条第1項）。③誤：「6か月以内」⇒「3か月以内」（労基法第32条の3第1項②）。④誤：「満20歳未満」⇒「満18歳未満」が深夜業禁止等の対象（労基法第60条）。⑤誤：12時間超の場合の休憩規定はない。"},
+  {id:"Q030",year:"2025年10月",subject:"関係法令_一般",subcat:"労働基準法（労働時間・休暇）",text:"週所定労働時間24時間・週所定労働日数4日の労働者で、雇入れから3年6か月継続勤務した者に対し、その後1年間に新たに与えなければならない年次有給休暇日数はどれか（直前1年間に全労働日の8割以上出勤）。",choices:["9日","10日","11日","12日","13日"],answer:2,explanation:"比例付与の計算：通常労働者の3年6か月経過後の付与日数は14日。週4日・週24時間の場合の比例付与率は4÷5.2（週5.2日基準）。14×4÷5.2＝10.76…→小数点以下切り捨て＝10日。【根拠】労基法第39条第3項、労基則第24条の3第3項。"},
+  {id:"Q031",year:"2025年10月",subject:"労働衛生_一般",subcat:"職場環境管理（温度・照度・換気）",text:"WBGT（湿球黒球温度）に関する文中の［ ］内に入れるA及びBの語句の組合せとして、正しいものはどれか。日射がある場合：WBGT＝0.7×自然湿球温度＋0.2×[A]＋0.1×[B]　日射がない場合：WBGT＝0.7×自然湿球温度＋0.3×[A]",choices:["A：黒球温度　B：風速","A：黒球温度　B：気温（乾球温度）","A：風速　B：黒球温度","A：気温（乾球温度）　B：風速","A：気温（乾球温度）　B：黒球温度"],answer:2,explanation:"WBGT算出式：日射あり＝0.7×自然湿球温度＋0.2×黒球温度＋0.1×気温（乾球温度）。日射なし＝0.7×自然湿球温度＋0.3×黒球温度。よってA＝黒球温度、B＝気温（乾球温度）。"},
+  {id:"Q032",year:"2025年10月",subject:"労働衛生_一般",subcat:"職場環境管理（温度・照度・換気）",text:"照明・採光などに関する記述のうち、誤っているものはどれか。",choices:["北向きの窓では、直射日光はほとんど入らないが一年中平均した明るさが得られる。","全般照明と局部照明を併用する場合、全般照明による照度は、局部照明による照度の10分の1以下になるようにする。","前方から明かりを取るときは、眼と光源を結ぶ線と視線とがなす角度が、おおむね30°以上になるように光源の位置を決めるとよい。","あらゆる方向から同程度の明るさの光がくると、見る物に影ができなくなり立体感がなくなるので、不都合な場合がある。","部屋の彩色として、目の高さ以下は濁色とし、目より上方の壁や天井は、明るい色を用いるとよい。"],answer:2,explanation:"①③④⑤正しい。【誤り】全般照明による照度は局部照明による照度の「10分の1以上」になるようにする。「以下」では暗すぎる。"},
+  {id:"Q033",year:"2025年10月",subject:"労働衛生_一般",subcat:"職場環境管理（温度・照度・換気）",text:"事務室における必要換気量Q（㎥/h）を算出する式として、適切なものはどれか。A：室内CO₂濃度測定値(ppm)　B：室内CO₂基準濃度(ppm)　C：外気CO₂濃度(ppm)　D：在室者全員が1時間に呼出するCO₂量（㎥/h）",choices:["Q＝{D/(A－B)}×100","Q＝{D/(A－C)}×100","Q＝{D/(B－C)}×100","Q＝{D/(A－B)}×1,000,000","Q＝{D/(B－C)}×1,000,000"],answer:5,explanation:"必要換気量Q＝D÷(B－C)×1,000,000。分母は「室内CO₂基準濃度－外気CO₂濃度」。濃度単位がppmなので1,000,000倍が必要。室内の実測値(A)ではなく基準濃度(B)を使用することがポイント。"},
+  {id:"Q034",year:"2025年10月",subject:"労働衛生_一般",subcat:"メンタルヘルス",text:"「労働者の心の健康の保持増進のための指針」に基づくメンタルヘルスケアの実施に関する記述のうち、適切でないものはどれか。",choices:["一次予防・二次予防・三次予防が円滑に行われるようにする必要がある。","プライバシー保護の観点から、衛生委員会等においてストレスチェック制度とメンタルヘルスケアの調査審議を関連付けて行うことは避ける。","セルフケアとは、労働者自身がストレスや心の健康について理解し、自らストレスを予防・軽減・対処することである。","心の健康問題を抱える労働者に対して、健康問題以外の観点から評価が行われる傾向があることに留意する。","労働者の心の健康は職場配置・人事異動・職場の組織等の要因によって影響を受けるため、人事労務管理部門と連携する。"],answer:2,explanation:"①③④⑤正しい。【誤り】ストレスチェック制度とメンタルヘルスケアを衛生委員会等で関連付けて調査審議することは「望ましい」とされている。プライバシー保護は個人情報の管理で対応すべきもので、審議を分けることは求められていない。"},
+  {id:"Q035",year:"2025年10月",subject:"労働衛生_一般",subcat:"健康増進・THP",text:"「事業場における労働者の健康保持増進のための指針」に基づく健康保持増進対策に関する記述のうち、適切でないものはどれか。",choices:["健康保持増進措置は個々の労働者への実施と集団への実施の両方がある。","課題把握・目標設定等では、客観的に把握できる数値を活用することが望ましい。","健康指導には、運動指導・メンタルヘルスケア・栄養指導・口腔保健指導・保健指導が含まれる。","推進に当たっては、衛生委員会等を活用する。","医療保険者との連携であっても、定期健康診断結果等を医療保険者に提供してはならない。"],answer:5,explanation:"①②③④正しい。【誤り】コラボヘルス推進のため、労働安全衛生法に基づく定期健康診断の結果の記録等を医療保険者に共有することが必要とされている。医療保険者への提供は認められている。"},
+  {id:"Q036",year:"2025年10月",subject:"労働衛生_一般",subcat:"食中毒・感染症",text:"食中毒に関する記述のうち、誤っているものはどれか。",choices:["毒素型食中毒は食物に付着した細菌により産生された毒素によって起こり、ボツリヌス菌によるものがある。","感染型食中毒は食物に付着した細菌そのものの感染によって起こり、サルモネラ菌によるものがある。","O-157やO-111はベロ毒素を産生する大腸菌で、腹痛や出血を伴う水様性の下痢などの症状を呈する。","ノロウイルスの失活化には、煮沸消毒又は塩素系の消毒剤が効果的である。","魚・チーズなどに含まれるヒスチジンが細菌により分解されて生成するヒスタミンは、加熱により分解される。"],answer:5,explanation:"①②③④正しい。【誤り】ヒスタミンは耐熱性が高く、加熱しても分解されにくい。一度産生されると取り除くことが困難。そのため調理前の鮮度管理が重要。"},
+  {id:"Q037",year:"2025年10月",subject:"労働衛生_一般",subcat:"救急処置・AED",text:"虚血性心疾患に関する記述のうち、誤っているものはどれか。",choices:["運動負荷心電図検査は、心筋の異常や不整脈の発見には役立つが、虚血性心疾患の発見には有用でない。","虚血性心疾患は、狭心症と心筋梗塞とに大別される。","狭心症は、心臓の血管の一部の血流が一時的に悪くなる病気である。","心筋梗塞では突然激しい胸痛が起こり、症状が1時間以上続くこともある。","狭心症の発作は通常数分程度で、長くても15分以内におさまることが多い。"],answer:1,explanation:"【誤り】運動負荷心電図検査は虚血性心疾患（狭心症等）の発見にも有用。安静時心電図では発見できない虚血性変化を運動負荷によって誘発して検出できる。②③④⑤正しい。"},
+  {id:"Q038",year:"2025年10月",subject:"労働衛生_一般",subcat:"救急処置・AED",text:"骨折及びその救急処置に関する記述のうち、誤っているものはどれか。",choices:["開放骨折のことを複雑骨折という。","複雑骨折は、感染が起こりやすく治りにくい。","骨折部を副子で固定するときは、変形していてもそのままの状態を保持して直近の関節部を含めた広い範囲を固定する。","単純骨折とは、骨にひびが入った状態のことをいう。","完全骨折では、骨折端どうしが擦れ合う軋轢音が認められることがある。"],answer:4,explanation:"①②③⑤正しい。【誤り】単純骨折（閉鎖骨折）とは、皮膚には損傷がなく皮膚の下で骨が折れている状態。骨にひびが入った状態は「不完全骨折（亀裂骨折）」という。"},
+  {id:"Q039",year:"2025年10月",subject:"労働衛生_一般",subcat:"健康管理統計",text:"労働衛生管理に用いられる統計に関する記述のうち、誤っているものはどれか。",choices:["健康管理統計において、ある時点での検査における有所見者の割合を有所見率といい、これは発生率と同じ意味で用いられる。","集団を比較する場合、平均値が等しくても分散が異なっていれば異なった特徴をもつ集団と評価される。","データの代表値として平均値・中央値などがあるが、どれを選択するかはデータの内容と分布による。","ある事象と健康事象との間に統計上の相関関係が認められても、因果関係があるとは限らない。","病休度数率は、在籍労働者の延べ実労働時間数100万時間当たりの疾病休業件数で示される。"],answer:1,explanation:"【誤り】有所見率は「特定時点の断面調査（静態データ）」。発生率は「一定期間内に新規発生した人の割合（動態データ）」。両者は概念が異なり同じ意味では使えない。②③④⑤正しい。"},
+  {id:"Q040",year:"2025年10月",subject:"労働衛生_一般",subcat:"健康管理統計",text:"BMIに関する記述のうち、誤っているものはどれか。",choices:["BMIは肥満や低体重の判定に用いられ、大きいほど肥満・小さいほど痩せの傾向がある。","BMIによる肥満度の判定基準には、男性と女性とで同一の数値が用いられる。","BMIは、内臓脂肪の重量と直線的な比例関係にある。","BMIが22になる場合の体重は標準体重といわれる。","BMIが18.5以上25未満の範囲となる場合の体重は普通体重といわれる。"],answer:3,explanation:"①②④⑤正しい。【誤り】BMIと内臓脂肪は相関するが直線的な比例関係ではない。内臓脂肪の面積と直線的な比例関係にあるのは「腹囲（ウエスト周囲径）」。"},
+  {id:"Q041",year:"2025年10月",subject:"労働生理",subcat:"腎臓・泌尿器系とその働き",text:"腎臓又は尿に関する記述のうち、正しいものはどれか。",choices:["血中の蛋白質は、糸球体からボウマン嚢に濾し出される。","血中の老廃物は、尿細管からボウマン嚢に濾し出される。","原尿中に濾し出された水分の大部分は、そのまま尿として排出される。","尿は淡黄色の液体で、固有の臭気を有し、通常、弱アルカリ性である。","原尿中に濾し出された電解質の多くは、尿細管から血中に再吸収される。"],answer:5,explanation:"①誤：血中タンパク質は通常糸球体を通過しない。②誤：老廃物は「糸球体」からボウマン嚢に濾し出される。③誤：原尿の大部分（約99%）は尿細管で再吸収される。④誤：尿は弱酸性（アルカリ性ではない）。⑤正しい：電解質・グルコース・水分等は尿細管で血中に再吸収される。"},
+  {id:"Q042",year:"2025年10月",subject:"労働生理",subcat:"循環器系（心臓・血液）",text:"心臓及び血液循環に関する記述のうち、誤っているものはどれか。",choices:["心臓の洞結節で発生した刺激が刺激伝導系を介して心筋に伝わり、規則正しく収縮・拡張を繰り返す。","心臓の拍動は自律神経の支配を受けている。","体循環では血液は左心室から大動脈に入り、静脈血となって右心房に戻ってくる。","肺循環とは、右心室から肺静脈を経て肺の毛細血管に入り、肺動脈を通って左心房に戻る血液の循環をいう。","動脈硬化とは、コレステロールの蓄積などにより動脈壁が肥厚・硬化して弾力性を失った状態である。"],answer:4,explanation:"①②③⑤正しい。【誤り】肺循環の正しい経路：右心室→肺動脈（静脈血）→肺の毛細血管（ガス交換）→肺静脈（動脈血）→左心房。選択肢は肺動脈と肺静脈が逆になっている。"},
+  {id:"Q043",year:"2025年10月",subject:"労働生理",subcat:"神経系・感覚器",text:"ヒトのホルモン・内分泌器官・はたらきの組合せとして、誤っているものはどれか。",choices:["コルチゾール　副腎皮質　血糖量の増加","アルドステロン　副腎皮質　体液中の塩類バランスの調節","メラトニン　副甲状腺　体液中のカルシウムバランスの調節","インスリン　膵臓　血糖量の減少","グルカゴン　膵臓　血糖量の増加"],answer:3,explanation:"①②④⑤正しい。【誤り】メラトニンは「松果体」から分泌され、「睡眠の誘発・概日リズムの調節」を行う。副甲状腺（上皮小体）から分泌されるのは「パラソルモン（PTH）」で、カルシウムバランスを調節する。"},
+  {id:"Q044",year:"2025年10月",subject:"労働生理",subcat:"消化器系・代謝",text:"蛋白質並びにその分解・吸収・代謝に関する記述のうち、誤っているものはどれか。",choices:["蛋白質は約20種類のアミノ酸が結合してできており、内臓・筋肉・皮膚など人体の臓器等を構成する主成分である。","蛋白質は、膵臓から分泌される消化酵素である膵リパーゼなどによりアミノ酸に分解され、小腸から吸収される。","血液循環に入ったアミノ酸は体内の各組織において蛋白質に再合成される。","肝臓では、アミノ酸から血漿蛋白質が合成される。","飢餓時には、肝臓などでアミノ酸などからブドウ糖を生成する糖新生が行われる。"],answer:2,explanation:"①③④⑤正しい。【誤り】膵リパーゼは脂質（中性脂肪）を分解する酵素。蛋白質を分解するのは「トリプシン・キモトリプシン」等のプロテアーゼ。"},
+  {id:"Q045",year:"2025年10月",subject:"労働生理",subcat:"消化器系・代謝",text:"消化器系に関する記述のうち、誤っているものはどれか。",choices:["十二指腸に胃から酸性の消化物が入ると、アルカリ性の膵液が分泌され酸を中和する。","無機塩及びビタミン類は、酵素による分解を受けないでそのまま吸収される。","胆汁はアルカリ性で、蛋白質を分解するトリプシンなどの消化酵素を含んでいる。","ペプシノーゲンは胃酸によってペプシンという消化酵素になり、蛋白質を分解する。","小腸の表面はビロード状の絨毛という小突起で覆われており、栄養素の吸収効率を上げるために役立っている。"],answer:3,explanation:"①②④⑤正しい。【誤り】胆汁はアルカリ性の消化液だが、消化酵素を含まない。胆汁酸塩による脂肪の乳化作用を担う。トリプシンは膵臓から分泌される消化酵素。"},
+  {id:"Q046",year:"2025年10月",subject:"労働生理",subcat:"循環器系（心臓・血液）",text:"血液に関する記述のうち、誤っているものはどれか。",choices:["赤血球は骨髄で産生され、寿命は約120日で、血球の中で最も多い。","血液中に占める赤血球の容積の割合をヘマトクリットといい、貧血になるとその値は低くなる。","好中球は白血球の約60%を占め、偽足を出してアメーバ様運動を行い細菌等を貪食する。","リンパ球は白血球の約30%を占め、TリンパBリンパ球等の種類があり免疫反応に関与している。","ABO式血液型は、白血球による血液型分類の一つで、A型血液の血清は抗B抗体をもつ。"],answer:5,explanation:"①②③④正しい。【誤り】ABO式血液型は「赤血球」の表面抗原による分類。白血球による血液型分類は「HLA型（白血球型）」。A型の血清が抗B抗体をもつのは正しいが、分類の根拠（赤血球か白血球か）が誤り。"},
+  {id:"Q047",year:"2025年10月",subject:"労働生理",subcat:"神経系・感覚器",text:"神経系に関する記述のうち、誤っているものはどれか。",choices:["神経系は中枢神経系と末梢神経系に大別され、中枢神経系は脳と脊髄から成る。","大脳の内側の髄質は、神経細胞の細胞体が集合した灰白質で、感覚・運動・思考などを支配する中枢として機能する。","神経系を構成する基本的な単位である神経細胞は、通常1個の細胞体・1本の軸索・複数の樹状突起から成り、ニューロンともいわれる。","交感神経系は、心拍数を増加したり、消化管の運動を抑制する。","体性神経には感覚器官からの情報を中枢に伝える感覚神経と、中枢からの命令を運動器官に伝える運動神経がある。"],answer:2,explanation:"①③④⑤正しい。【誤り】神経細胞の細胞体が集合した灰白質があるのは「大脳の外側（皮質）」。大脳の内側（髄質）は神経線維の集まりである「白質」。"},
+  {id:"Q048",year:"2025年10月",subject:"労働生理",subcat:"筋肉・骨格",text:"筋肉に関する記述のうち、誤っているものはどれか。",choices:["刺激に対して意識とは無関係に起こる定型的な反応を反射といい、最も単純な反射には膝蓋腱反射などの伸張反射がある。","筋肉が収縮して出す最大筋力は、筋肉の単位断面積当たりの平均値をとると、性差や年齢差はほとんどない。","運動することによって筋肉が太くなることを筋肉の活動性肥大という。","荷物を持ち上げたり屈伸運動をするとき、関節運動に関与する筋肉には等張性収縮が生じている。","筋肉中のグリコーゲンは、酸素が十分に供給されると完全に分解され、最後に乳酸になる。"],answer:5,explanation:"①②③④正しい。【誤り】酸素が十分に供給される有酸素条件下では、グリコーゲン→多量のATP＋二酸化炭素＋水（完全燃焼）。乳酸が生成されるのは酸素が不足する嫌気的条件下のみ。"},
+  {id:"Q049",year:"2025年10月",subject:"労働生理",subcat:"体温調節",text:"体温調節に関する記述のうち、正しいものはどれか。",choices:["寒冷な環境では皮膚の血管が拡張して血流量を増し、皮膚温を上昇させる。","暑熱な環境では内臓の血流量が増加し体内の代謝活動が亢進することにより、人体からの熱の放散が促進される。","体温調節のように外部環境が変化しても身体内部の状態を一定に保つ生体の仕組みを同調性といい、筋肉と神経系により調整されている。","体温調節中枢は小脳にあり、熱の産生と放散のバランスを維持し体温を一定に保つ。","甲状腺ホルモンの分泌により、代謝が亢進し体温は上昇する。"],answer:5,explanation:"①誤：寒冷時は皮膚血管が収縮して熱放散を減らす（拡張ではない）。②誤：暑熱時は「皮膚の血流量を増やし発汗量を増やす」ことで熱放散を促進（内臓血流量増加ではない）。③誤：「同調性」⇒「恒常性（ホメオスタシス）」。④誤：体温調節中枢は「間脳の視床下部」（小脳ではない）。⑤正しい：甲状腺ホルモンは基礎代謝を促進し体温を上昇させる。"},
+  {id:"Q050",year:"2025年10月",subject:"労働生理",subcat:"神経系・感覚器",text:"ストレスに関する記述のうち、誤っているものはどれか。",choices:["外部からの刺激であるストレッサーは、その形態や程度にかかわらず、自律神経系と内分泌系を介して、心身の活動を抑圧する。","ストレスに伴う心身の反応には、ノルアドレナリン・アドレナリン等のカテコールアミンや副腎皮質ホルモンが深く関与している。","昇進・転勤・配置替えなどがストレスの原因となることがある。","職場環境における騒音・気温・湿度・悪臭などがストレスの原因となることがある。","ストレスにより自律神経系と内分泌系のバランスが崩れ、精神神経科的疾患又は内科的疾患が生じる場合がある。"],answer:1,explanation:"【誤り】ストレッサーは「形態や程度にかかわらず」心身の活動を抑圧するわけではない。適度なストレスは活動を活性化させる効果があり、ストレス反応の大きさは種類・強度・個人差による。②③④⑤正しい。"}
+];
+
+// ═══════════════════════════════════════════════════════
+// 科目設定
+// ═══════════════════════════════════════════════════════
+const SUBJECTS = {
+  "関係法令_有害": { label:"関係法令（有害業務）", count:10, points:8, cutoff:32 },
+  "関係法令_一般": { label:"関係法令（一般）",     count:7,  points:10, cutoff:28 },
+  "労働衛生_有害": { label:"労働衛生（有害業務）", count:10, points:8,  cutoff:32 },
+  "労働衛生_一般": { label:"労働衛生（一般）",     count:7,  points:10, cutoff:28 },
+  "労働生理":       { label:"労働生理",             count:10, points:10, cutoff:40 }
+};
+
+// ═══════════════════════════════════════════════════════
+// state & localStorage
+// ═══════════════════════════════════════════════════════
+let history = JSON.parse(localStorage.getItem('eisei_history') || '{}');
+// history[id] = { correct: bool, attempts: n }
+let wrongSet = JSON.parse(localStorage.getItem('eisei_wrong') || '[]');
+wrongSet = new Set(wrongSet);
+let autoRemove = localStorage.getItem('eisei_autoremove') !== 'false';
+
+function saveHistory() {
+  localStorage.setItem('eisei_history', JSON.stringify(history));
+  localStorage.setItem('eisei_wrong', JSON.stringify([...wrongSet]));
+}
+
+// ═══════════════════════════════════════════════════════
+// session state
+// ═══════════════════════════════════════════════════════
+let session = { queue: [], idx: 0, answered: false, mode: 'practice' };
+
+// ═══════════════════════════════════════════════════════
+// ナビ
+// ═══════════════════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.getElementById('nav-' + name).classList.add('active');
+  if (name === 'review') renderReview();
+  if (name === 'stats') renderStats();
+}
+
+// ═══════════════════════════════════════════════════════
+// フィルター初期化
+// ═══════════════════════════════════════════════════════
+(function initFilters() {
+  // 年度
+  const years = [...new Set(QUESTIONS.map(q => q.year.replace(/年\d+月/, '年')))].sort();
+  const ysel = document.getElementById('filter-year');
+  years.forEach(y => { const o = document.createElement('option'); o.value = y; o.textContent = y; ysel.appendChild(o); });
+
+  document.getElementById('filter-subject').addEventListener('change', updateSubcatFilter);
+  document.getElementById('filter-subject').addEventListener('change', restartSession);
+  document.getElementById('filter-subcat').addEventListener('change', restartSession);
+  document.getElementById('filter-year').addEventListener('change', restartSession);
+  document.getElementById('filter-count').addEventListener('change', restartSession);
+})();
+
+function updateSubcatFilter() {
+  const subject = document.getElementById('filter-subject').value;
+  const subcat = document.getElementById('filter-subcat');
+  const prev = subcat.value;
+  subcat.innerHTML = '<option value="">すべて</option>';
+  const cats = [...new Set(QUESTIONS
+    .filter(q => !subject || q.subject === subject)
+    .map(q => q.subcat))].sort();
+  cats.forEach(c => {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    subcat.appendChild(o);
+  });
+  if (cats.includes(prev)) subcat.value = prev;
+}
+
+function getFilteredQuestions() {
+  const subj = document.getElementById('filter-subject').value;
+  const sub  = document.getElementById('filter-subcat').value;
+  const yr   = document.getElementById('filter-year').value;
+  return QUESTIONS.filter(q => {
+    if (subj && q.subject !== subj) return false;
+    if (sub  && q.subcat  !== sub)  return false;
+    if (yr   && !q.year.startsWith(yr.replace('年',''))) return false;
+    return true;
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// セッション
+// ═══════════════════════════════════════════════════════
+function restartSession() {
+  session.mode = 'practice';
+  const qs = getFilteredQuestions();
+  const countVal = document.getElementById('filter-count').value;
+  const limit = countVal ? parseInt(countVal) : Infinity;
+  session.queue = [...qs].sort(() => Math.random() - 0.5).slice(0, limit);
+  session.idx = 0;
+  session.answered = false;
+  session.sessionCorrect = 0;
+  document.getElementById('session-result').style.display = 'none';
+  if (session.queue.length === 0) {
+    document.getElementById('quiz-area').style.display = 'none';
+    document.getElementById('empty-state').style.display = 'block';
+    updateProgress();
+  } else {
+    document.getElementById('quiz-area').style.display = 'block';
+    document.getElementById('empty-state').style.display = 'none';
+    renderQuestion();
+  }
+}
+
+function renderQuestion() {
+  const q = session.queue[session.idx];
+  if (!q) { showFinished(); return; }
+
+  session.answered = false;
+  document.getElementById('q-meta').innerHTML =
+    `<span class="meta-tag">${q.id}</span>` +
+    `<span class="meta-tag">${q.year}</span>` +
+    `<span class="meta-tag">${SUBJECTS[q.subject]?.label || q.subject}</span>` +
+    `<span class="meta-tag">${q.subcat}</span>`;
+  document.getElementById('q-text').textContent = q.text;
+
+  const choices = document.getElementById('choices');
+  choices.innerHTML = '';
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="choice-num">${i+1}</span><span>${c}</span>`;
+    btn.onclick = () => selectChoice(i+1, btn);
+    choices.appendChild(btn);
+  });
+
+  document.getElementById('result-msg').style.display = 'none';
+  document.getElementById('explanation').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+  document.getElementById('restart-btn').style.display = 'none';
+  updateProgress();
+}
+
+function selectChoice(num, btn) {
+  if (session.answered) return;
+  session.answered = true;
+  const q = session.queue[session.idx];
+  const correct = num === q.answer;
+
+  // 選択肢を全部disable
+  document.querySelectorAll('.choice-btn').forEach((b, i) => {
+    b.disabled = true;
+    if (i+1 === q.answer) b.classList.add('correct');
+  });
+  if (!correct) btn.classList.add('wrong');
+
+  // 結果メッセージ
+  const msg = document.getElementById('result-msg');
+  msg.style.display = 'block';
+  if (correct) {
+    msg.className = 'result-msg correct';
+    msg.textContent = '✓ 正解！';
+    if (!history[q.id]) history[q.id] = { correct: 0, wrong: 0 };
+    history[q.id].correct++;
+    if (autoRemove && wrongSet.has(q.id)) { wrongSet.delete(q.id); }
+    session.sessionCorrect = (session.sessionCorrect || 0) + 1;
+  } else {
+    msg.className = 'result-msg wrong';
+    msg.textContent = `✗ 不正解。正解は ${q.answer} 番です。`;
+    if (!history[q.id]) history[q.id] = { correct: 0, wrong: 0 };
+    history[q.id].wrong++;
+    wrongSet.add(q.id);
+  }
+
+  // 解説
+  const exp = document.getElementById('explanation');
+  exp.style.display = 'block';
+  exp.textContent = q.explanation;
+
+  saveHistory();
+  updateBadge();
+
+  const total = session.queue.length;
+  const isLast = session.idx >= total - 1;
+  document.getElementById('next-btn').style.display = isLast ? 'none' : 'block';
+  document.getElementById('restart-btn').style.display = isLast ? 'block' : 'none';
+}
+
+function nextQuestion() {
+  session.idx++;
+  renderQuestion();
+}
+
+function showFinished() {
+  const total = session.queue.length;
+  const correct = session.sessionCorrect || 0;
+  const wrong = total - correct;
+  const pct = total ? Math.round(correct / total * 100) : 0;
+  const color = pct >= 60 ? '#16a34a' : pct >= 40 ? '#d97706' : '#dc2626';
+
+  document.getElementById('q-meta').innerHTML = '';
+  document.getElementById('q-text').textContent = '';
+  document.getElementById('choices').innerHTML = '';
+  document.getElementById('result-msg').style.display = 'none';
+  document.getElementById('explanation').style.display = 'none';
+  document.getElementById('next-btn').style.display = 'none';
+
+  const resultEl = document.getElementById('session-result');
+  resultEl.style.display = 'block';
+  resultEl.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;text-align:center">
+      <div style="font-size:14px;color:var(--text2);margin-bottom:8px">セッション終了</div>
+      <div style="font-size:52px;font-weight:700;color:${color};line-height:1">${pct}<span style="font-size:24px">%</span></div>
+      <div style="font-size:14px;color:var(--text2);margin:8px 0 20px">${total}問中 <b style="color:var(--text)">${correct}問</b> 正解（${wrong}問不正解）</div>
+      <div style="display:flex;justify-content:center;gap:24px">
+        <div style="text-align:center">
+          <div style="width:48px;height:48px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:20px;font-weight:700;color:#16a34a">${correct}</div>
+          <div style="font-size:11px;color:var(--text2)">正解</div>
+        </div>
+        <div style="text-align:center">
+          <div style="width:48px;height:48px;border-radius:50%;background:#fee2e2;display:flex;align-items:center;justify-content:center;margin:0 auto 4px;font-size:20px;font-weight:700;color:#dc2626">${wrong}</div>
+          <div style="font-size:11px;color:var(--text2)">不正解</div>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('restart-btn').style.display = 'block';
+}
+
+function updateProgress() {
+  const total = session.queue.length;
+  const cur = session.idx + 1;
+  const pct = total ? Math.round((session.idx / total) * 100) : 0;
+  document.getElementById('progress-text').textContent = total ? `${cur} / ${total}` : '0 / 0';
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+// ═══════════════════════════════════════════════════════
+// 苦手バッジ
+// ═══════════════════════════════════════════════════════
+function updateBadge() {
+  const badge = document.getElementById('review-badge');
+  const n = wrongSet.size;
+  badge.style.display = n > 0 ? 'block' : 'none';
+  badge.textContent = n;
+}
+
+// ═══════════════════════════════════════════════════════
+// 苦手復習ページ
+// ═══════════════════════════════════════════════════════
+function toggleAutoRemove() {
+  autoRemove = !autoRemove;
+  const t = document.getElementById('auto-remove-toggle');
+  t.classList.toggle('on', autoRemove);
+  localStorage.setItem('eisei_autoremove', autoRemove);
+}
+
+function renderReview() {
+  const area = document.getElementById('review-area');
+  const tog = document.getElementById('auto-remove-toggle');
+  tog.classList.toggle('on', autoRemove);
+
+  if (wrongSet.size === 0) {
+    area.innerHTML = '<div class="empty-state">苦手問題はありません。<br>引き続き練習を続けましょう！</div>';
+    return;
+  }
+
+  const qs = QUESTIONS.filter(q => wrongSet.has(q.id)).sort(() => Math.random() - 0.5);
+  session.mode = 'review';
+  session.queue = qs;
+  session.idx = 0;
+  session.answered = false;
+
+  // reviewページは練習ページと同じUIを再利用
+  area.innerHTML = `
+    <div class="progress-bar-wrap">
+      <div class="progress-info">
+        <span id="review-progress-text">1 / ${qs.length}</span>
+        <span>苦手：${qs.length}問</span>
+      </div>
+      <div class="progress-bar"><div class="progress-bar-fill" id="review-fill" style="width:0%"></div></div>
+    </div>
+    <div class="question-card">
+      <div class="question-meta" id="rv-meta"></div>
+      <div class="question-text" id="rv-text"></div>
+    </div>
+    <div class="choices" id="rv-choices"></div>
+    <div class="result-msg" id="rv-result"></div>
+    <div class="explanation" id="rv-exp"></div>
+    <button class="btn" id="rv-next" style="display:none" onclick="reviewNext()">次の問題へ</button>
+    <button class="btn btn-secondary" id="rv-done" style="display:none" onclick="renderReview()">復習を最初から</button>
+  `;
+  renderReviewQuestion();
+}
+
+function renderReviewQuestion() {
+  const q = session.queue[session.idx];
+  if (!q) {
+    document.getElementById('rv-text').textContent = '復習完了！引き続き練習を続けましょう。';
+    document.getElementById('rv-meta').innerHTML = '';
+    document.getElementById('rv-choices').innerHTML = '';
+    document.getElementById('rv-next').style.display = 'none';
+    document.getElementById('rv-done').style.display = 'block';
+    return;
+  }
+  const total = session.queue.length;
+  const pct = Math.round((session.idx / total) * 100);
+  document.getElementById('review-progress-text').textContent = `${session.idx+1} / ${total}`;
+  document.getElementById('review-fill').style.width = pct + '%';
+
+  document.getElementById('rv-meta').innerHTML =
+    `<span class="meta-tag">${q.id}</span>` +
+    `<span class="meta-tag">${q.year}</span>` +
+    `<span class="meta-tag">${SUBJECTS[q.subject]?.label || q.subject}</span>` +
+    `<span class="meta-tag">${q.subcat}</span>`;
+  document.getElementById('rv-text').textContent = q.text;
+
+  const choices = document.getElementById('rv-choices');
+  choices.innerHTML = '';
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="choice-num">${i+1}</span><span>${c}</span>`;
+    btn.onclick = () => reviewSelect(i+1, btn);
+    choices.appendChild(btn);
+  });
+
+  document.getElementById('rv-result').style.display = 'none';
+  document.getElementById('rv-exp').style.display = 'none';
+  document.getElementById('rv-next').style.display = 'none';
+  document.getElementById('rv-done').style.display = 'none';
+  session.answered = false;
+}
+
+function reviewSelect(num, btn) {
+  if (session.answered) return;
+  session.answered = true;
+  const q = session.queue[session.idx];
+  const correct = num === q.answer;
+
+  document.querySelectorAll('#rv-choices .choice-btn').forEach((b, i) => {
+    b.disabled = true;
+    if (i+1 === q.answer) b.classList.add('correct');
+  });
+  if (!correct) btn.classList.add('wrong');
+
+  const msg = document.getElementById('rv-result');
+  msg.style.display = 'block';
+  if (correct) {
+    msg.className = 'result-msg correct';
+    msg.textContent = '✓ 正解！';
+    if (!history[q.id]) history[q.id] = { correct: 0, wrong: 0 };
+    history[q.id].correct++;
+    if (autoRemove) { wrongSet.delete(q.id); }
+  } else {
+    msg.className = 'result-msg wrong';
+    msg.textContent = `✗ 不正解。正解は ${q.answer} 番です。`;
+    if (!history[q.id]) history[q.id] = { correct: 0, wrong: 0 };
+    history[q.id].wrong++;
+  }
+
+  document.getElementById('rv-exp').style.display = 'block';
+  document.getElementById('rv-exp').textContent = q.explanation;
+
+  saveHistory();
+  updateBadge();
+
+  const isLast = session.idx >= session.queue.length - 1;
+  document.getElementById('rv-next').style.display = isLast ? 'none' : 'block';
+  document.getElementById('rv-done').style.display = isLast ? 'block' : 'none';
+}
+
+function reviewNext() {
+  session.idx++;
+  renderReviewQuestion();
+}
+
+// ═══════════════════════════════════════════════════════
+// 進捗ページ
+// ═══════════════════════════════════════════════════════
+let chartInstance = null;
+
+function renderStats() {
+  const area = document.getElementById('stats-area');
+
+  // 科目別集計
+  const subjectStats = {};
+  Object.keys(SUBJECTS).forEach(s => { subjectStats[s] = { correct:0, wrong:0, total:0 }; });
+
+  QUESTIONS.forEach(q => {
+    const h = history[q.id];
+    const s = subjectStats[q.subject];
+    if (!s) return;
+    s.total++;
+    if (h) { s.correct += h.correct; s.wrong += h.wrong; }
+  });
+
+  // 全体集計
+  let totalCorrect = 0, totalAttempts = 0, totalScore = 0, totalMax = 0;
+  let allPass = true;
+  Object.entries(subjectStats).forEach(([s, v]) => {
+    const info = SUBJECTS[s];
+    totalCorrect += v.correct;
+    totalAttempts += v.correct + v.wrong;
+    // 得点（直近の正答数ベース）
+    const attempted = Math.min(v.correct + v.wrong, info.count);
+    const correctRate = attempted > 0 ? v.correct / (v.correct + v.wrong) : 0;
+    const estCorrect = Math.round(correctRate * info.count);
+    const score = estCorrect * info.points;
+    totalScore += score;
+    totalMax += info.count * info.points;
+    if (score < info.cutoff) allPass = false;
+  });
+  const overallRate = totalAttempts > 0 ? Math.round(totalCorrect / totalAttempts * 100) : 0;
+  const answeredIDs = new Set(Object.keys(history));
+  const answered = QUESTIONS.filter(q => answeredIDs.has(q.id)).length;
+
+  // 中分類別
+  const subcatStats = {};
+  QUESTIONS.forEach(q => {
+    if (!subcatStats[q.subcat]) subcatStats[q.subcat] = { correct:0, total:0 };
+    const h = history[q.id];
+    subcatStats[q.subcat].total++;
+    if (h && h.correct > 0) subcatStats[q.subcat].correct++;
+  });
+
+  const isPass = totalScore >= 240 && allPass;
+
+  area.innerHTML = `
+    <div class="stat-cards">
+      <div class="stat-card">
+        <div class="label">解答済み</div>
+        <div class="value">${answered}</div>
+        <div class="sub">/ ${QUESTIONS.length} 問</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">正答率（全体）</div>
+        <div class="value">${overallRate}<span style="font-size:14px">%</span></div>
+        <div class="sub">${totalCorrect} / ${totalAttempts} 回答</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">推定得点</div>
+        <div class="value">${totalScore}<span style="font-size:14px">点</span></div>
+        <div class="sub">満点 ${totalMax}点</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">苦手問題</div>
+        <div class="value" style="color:var(--badge)">${wrongSet.size}</div>
+        <div class="sub">問</div>
+      </div>
+    </div>
+    <div class="verdict ${isPass && totalAttempts > 0 ? 'pass' : 'fail'}">${totalAttempts === 0 ? '── まだ練習していません ──' : isPass ? '合格圏！（推定）' : '要継続学習'}</div>
+    <div class="chart-card">
+      <div class="chart-title">科目別 正答率</div>
+      <div class="chart-wrap"><canvas id="subject-chart"></canvas></div>
+    </div>
+    <div class="section-title">中分類別 正答率</div>
+    <div class="subcat-list" id="subcat-list"></div>
+    <button class="btn btn-secondary" style="margin-top:8px;margin-bottom:24px" onclick="if(confirm('学習履歴をリセットしますか？'))resetHistory()">学習履歴をリセット</button>
+  `;
+
+  // グラフ
+  if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+  const labels = Object.values(SUBJECTS).map(s => s.label.replace('（', '\n（'));
+  const rates = Object.entries(subjectStats).map(([s, v]) => {
+    const tot = v.correct + v.wrong;
+    return tot > 0 ? Math.round(v.correct / tot * 100) : 0;
+  });
+  const cutoffs = Object.values(SUBJECTS).map(s => 40); // 40%足切り
+
+  const ctx = document.getElementById('subject-chart').getContext('2d');
+  chartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: Object.values(SUBJECTS).map(s => s.label),
+      datasets: [
+        {
+          label: '正答率 (%)',
+          data: rates,
+          backgroundColor: rates.map(r => r >= 40 ? 'rgba(37,99,235,0.7)' : 'rgba(239,68,68,0.65)'),
+          borderColor: rates.map(r => r >= 40 ? '#2563eb' : '#ef4444'),
+          borderWidth: 1,
+          borderRadius: 4,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        annotation: {},
+        tooltip: { callbacks: { label: ctx => ctx.parsed.y + '%' } }
+      },
+      scales: {
+        y: {
+          min: 0, max: 100,
+          ticks: { color: '#5a6e80', callback: v => v + '%' },
+          grid: { color: '#dde3ea' }
+        },
+        x: { ticks: { color: '#5a6e80', font: { size: 11 } }, grid: { display: false } }
+      }
+    },
+    plugins: [{
+      id: 'cutoff',
+      afterDraw(chart) {
+        const { ctx, chartArea: { left, right }, scales: { y } } = chart;
+        const yPos = y.getPixelForValue(40);
+        ctx.save();
+        ctx.strokeStyle = '#e76f51';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(left, yPos);
+        ctx.lineTo(right, yPos);
+        ctx.stroke();
+        ctx.fillStyle = '#e76f51';
+        ctx.font = '10px sans-serif';
+        ctx.fillText('足切り40%', right - 56, yPos - 4);
+        ctx.restore();
+      }
+    }]
+  });
+
+  // 中分類リスト
+  const list = document.getElementById('subcat-list');
+  Object.entries(subcatStats)
+    .sort((a, b) => {
+      const ra = a[1].total > 0 ? a[1].correct / a[1].total : 0;
+      const rb = b[1].total > 0 ? b[1].correct / b[1].total : 0;
+      return ra - rb;
+    })
+    .forEach(([name, v]) => {
+      const pct = v.total > 0 ? Math.round(v.correct / v.total * 100) : 0;
+      const color = pct >= 60 ? '#2563eb' : pct >= 40 ? '#d97706' : '#ef4444';
+      const row = document.createElement('div');
+      row.className = 'subcat-row';
+      row.innerHTML = `
+        <span class="subcat-name">${name}</span>
+        <div class="subcat-bar-wrap">
+          <div class="subcat-bar" style="width:${pct}%;background:${color}"></div>
+        </div>
+        <span class="subcat-pct">${pct}%</span>
+      `;
+      list.appendChild(row);
+    });
+}
+
+function resetHistory() {
+  history = {};
+  wrongSet = new Set();
+  saveHistory();
+  updateBadge();
+  renderStats();
+}
+
+// ═══════════════════════════════════════════════════════
+// 初期化
+// ═══════════════════════════════════════════════════════
+updateBadge();
+restartSession();
+</script>
+</body>
+</html>

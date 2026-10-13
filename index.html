@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>衛生管理者 過去問トレーナー（移転のお知らせ）</title>
+<style>
+  :root {
+    --bg: #f0f4f8;
+    --bg2: #ffffff;
+    --border: #ccd5de;
+    --text: #1a2634;
+    --text2: #5a6e80;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1720;
+      --bg2: #1a2430;
+      --border: #2e3b4a;
+      --text: #e6edf3;
+      --text2: #9aabbd;
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+    line-height: 1.7;
+  }
+  main {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 40px 16px;
+  }
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 20px;
+  }
+  h1 { font-size: 20px; margin: 0 0 16px; }
+  p { margin: 0 0 14px; }
+  .stats {
+    display: flex;
+    gap: 12px;
+    margin: 18px 0;
+  }
+  .stat {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+  }
+  .stat b { display: block; font-size: 24px; }
+  .stat span { font-size: 13px; color: var(--text2); }
+  button {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    background: var(--primary);
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  button:hover { background: var(--primary-dark); }
+  .note { font-size: 13px; color: var(--text2); margin-top: 16px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <!-- 前のアプリの記録がある人 -->
+    <section id="has-data" hidden>
+      <h1>新しいアプリに引っ越しました</h1>
+      <p>衛生管理者 過去問トレーナーは、新しいアプリに移りました。この端末に残っている学習記録を、そのまま引き継げます。</p>
+      <div class="stats">
+        <div class="stat"><b id="n-answered">0</b><span>解いた問題</span></div>
+        <div class="stat"><b id="n-wrong">0</b><span>苦手リスト</span></div>
+      </div>
+      <p id="already" hidden>この端末の記録は、<span id="migrated-at"></span>に引き継ぎ済みです。もう一度押しても、回数が二重に数えられることはありません。</p>
+      <button id="go">記録を引き継いで新しいアプリへ</button>
+      <p class="note">新しいアプリでは、右上の「ログイン（同期）」から Google でログインすると、記録がクラウドに保存され、スマホとパソコンで続きができます。ログインした方の学習状況は、管理者が確認できます。</p>
+    </section>
+
+    <!-- 記録がない人 -->
+    <section id="no-data" hidden>
+      <h1>このアプリは終了しました</h1>
+      <p>衛生管理者 過去問トレーナーは、公開を終了しました。</p>
+      <p>続けて使いたい方は、米山までご連絡ください。</p>
+      <p class="note">以前このアプリで勉強していた方へ：記録は、使っていたときと同じ端末・同じブラウザでこのページを開くと引き継げます。LINE の中で開いていた方は、LINE からこのページを開いてください。</p>
+    </section>
+  </div>
+</main>
+
+<script>
+// 前のアプリ（このURL）は学習記録をブラウザの中（localStorage）に保存していた。
+// 同じURLのページからなら読めるので、新しいアプリへ「#import=記録」を付けて渡す。
+// 「#」より後ろはどこのサーバーにも送られない。元の記録は消さずに残す。
+const NEW_APP_URL = 'https://eisei-trainer.web.app/';
+
+function readOld(key, fallback) {
+  try {
+    const v = JSON.parse(localStorage.getItem(key) || 'null');
+    return v == null ? fallback : v;
+  } catch (e) {
+    return fallback;
+  }
+}
+
+const history = readOld('eisei_history', {});
+const wrong = readOld('eisei_wrong', []);
+const answered = Object.keys(history).length;
+
+function buildImportUrl(base) {
+  const json = JSON.stringify({ v: 1, h: history, w: wrong });
+  const b64 = btoa(unescape(encodeURIComponent(json)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return base + '#import=' + b64;
+}
+
+if (answered > 0 || wrong.length > 0) {
+  document.getElementById('has-data').hidden = false;
+  document.getElementById('n-answered').textContent = answered;
+  document.getElementById('n-wrong').textContent = wrong.length;
+  const migratedAt = localStorage.getItem('eisei_migrated');
+  if (migratedAt) {
+    document.getElementById('already').hidden = false;
+    document.getElementById('migrated-at').textContent =
+      new Date(migratedAt).toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' });
+    const go = document.getElementById('go');
+    go.textContent = '新しいアプリを開く';
+  }
+  document.getElementById('go').onclick = () => {
+    try { localStorage.setItem('eisei_migrated', new Date().toISOString()); } catch (e) {}
+    location.href = buildImportUrl(NEW_APP_URL);
+  };
+} else {
+  document.getElementById('no-data').hidden = false;
+}
+</script>
+</body>
+</html>

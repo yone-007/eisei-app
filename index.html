@@ -75,6 +75,14 @@
   }
   button:hover { background: var(--primary-dark); }
   .note { font-size: 13px; color: var(--text2); margin-top: 16px; }
+  .box {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 14px 16px;
+    margin: 18px 0 0;
+  }
+  .box ul { margin: 0 0 14px; padding-left: 1.2em; font-size: 14px; }
+  .box li { margin-bottom: 8px; }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -96,10 +104,19 @@
 
     <!-- 記録がない人 -->
     <section id="no-data" hidden>
-      <h1>このアプリは終了しました</h1>
-      <p>衛生管理者 過去問トレーナーは、公開を終了しました。</p>
-      <p>続けて使いたい方は、米山までご連絡ください。</p>
-      <p class="note">以前このアプリで勉強していた方へ：記録は、使っていたときと同じ端末・同じブラウザでこのページを開くと引き継げます。LINE の中で開いていた方は、LINE からこのページを開いてください。</p>
+      <h1>このアプリは移転しました</h1>
+      <p>衛生管理者 過去問トレーナーは、ここでの公開を終了しました。</p>
+      <div class="box">
+        <p><b>このブラウザでは、前の学習記録が見つかりませんでした。</b></p>
+        <p>記録は、前に使っていたのと<b>同じスマホ（パソコン）の、同じブラウザ</b>でこのページを開くと引き継げます。</p>
+        <ul>
+          <li>Slack や LINE からリンクを押すと、普段と違うブラウザで開くことがあります。下のボタンでURLをコピーして、前に使っていたブラウザ（Chrome、Safari、Galaxy の「インターネット」など）のアドレス欄に貼り付けて開いてください。</li>
+          <li>LINE の中で使っていた方は、LINE のトークでこのURLを押して開いてください。</li>
+          <li>パソコンで使っていた方は、パソコンで開いてください。</li>
+        </ul>
+        <button id="copy">このページのURLをコピー</button>
+      </div>
+      <p class="note">どのブラウザでも見つからない場合は、記録が消えている可能性があります。続けて使いたい方は、米山までご連絡ください。</p>
     </section>
   </div>
 </main>
@@ -148,6 +165,16 @@ if (answered > 0 || wrong.length > 0) {
   };
 } else {
   document.getElementById('no-data').hidden = false;
+  const copy = document.getElementById('copy');
+  copy.onclick = async () => {
+    const url = location.origin + location.pathname;
+    try {
+      await navigator.clipboard.writeText(url);
+      copy.textContent = 'コピーしました';
+    } catch (e) {
+      prompt('このURLをコピーしてください', url);
+    }
+  };
 }
 </script>
 </body>
